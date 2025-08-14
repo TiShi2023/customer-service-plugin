@@ -1,0 +1,12 @@
+[project]
+name = "customer-service-plugin"
+version = "0.1.0"
+description = "OpenAI 智能客服插件"
+authors = [{name = "lele", email = "1789335298@qq.com"}]
+dependencies = [
+    "alibabacloud_dingtalk",
+]
+
+[project.entry-points."omni_bot.plugins"]
+openai-bot-plugin = "customer_service_plugin.main:CustomerServicePlugin"
+dingtalk = "dingtalk"
