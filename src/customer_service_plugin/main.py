@@ -190,9 +190,9 @@ class CustomerServicePlugin(Plugin):
         plusginExcuteContext.should_stop = True
 
     def process_room(self, message, chat_history):
-        if self.room_update_time.get(message.room.display_name, 0) + self.cooling_time > time.time():
-            self.logger.info(f"群聊 {message.room.display_name} 最近已更新，跳过处理")
-            return
+        # if self.room_update_time.get(message.room.display_name, 0) + self.cooling_time > time.time():
+        #     self.logger.info(f"群聊 {message.room.display_name} 最近已更新，跳过处理")
+        #     return
         response = self.get_ai_response(msg=message, chat_history=chat_history)
         self.logger.info(f"AI响应: {response}")
         is_complaint, complaint = response.split('|')
