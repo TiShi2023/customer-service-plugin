@@ -165,7 +165,6 @@ class CustomerServicePlugin(Plugin):
                 self.room_timers[message.room.display_name] = Timer(self.cooling_time, self.process_room,
                                                                     args=(message, chat_history))
                 self.room_timers[message.room.display_name].start()
-            self.process_room(message, chat_history)
         else:
             # 私聊的消息，直接使用Dify的工作流回复
             response = self.get_ai_response(msg=message, chat_history=chat_history)
