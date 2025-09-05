@@ -153,16 +153,17 @@ class CustomerServicePlugin(Plugin):
         self.logger.info(f"读取到的群聊列表: {self.chat_rooms}")
         # 增加判断条件，如果是私聊，直接可以响应
         if message.is_chatroom:
-            # 从room_timers中判断该群聊计时器是否存在，存在则重置时间，否则创建一个新的计时器
+            # 从room_timers中判断该群聊计时器是否存在，存在则重置时间，否则创建一个新的计时器，计时到23:00时执行process_room方法
+            # 计算当前时间距离23：00的秒数，创建一个新的计时器
+            count_down = (23 - time.localtime().tm_hour) * 3600 - time.localtime().tm_min * 60 - time.localtime().tm_sec
             if message.room.display_name not in self.room_timers:
-                # 创建一个新的计时器
-                timer = Timer(self.cooling_time, self.process_room, args=(message, chat_history))
+                timer = Timer(count_down, self.process_room, args=(message, chat_history))
                 timer.start()
                 self.room_timers[message.room.display_name] = timer
             else:
                 # 重置现有的计时器
                 self.room_timers[message.room.display_name].cancel()
-                self.room_timers[message.room.display_name] = Timer(self.cooling_time, self.process_room,
+                self.room_timers[message.room.display_name] = Timer(count_down, self.process_room,
                                                                     args=(message, chat_history))
                 self.room_timers[message.room.display_name].start()
         else:
