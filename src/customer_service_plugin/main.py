@@ -150,7 +150,7 @@ class CustomerServicePlugin(Plugin):
         if len(json.loads(chat_history)) < self.min_session_length:
             return
         self.chat_rooms = self.read_all_chat_rooms()
-        self.logger.info(f"读取到的群聊列表: {self.chat_rooms}")
+        # self.logger.info(f"读取到的群聊列表: {self.chat_rooms}")
         # 增加判断条件，如果是私聊，直接可以响应
         if message.is_chatroom:
             # 从room_timers中判断该群聊计时器是否存在，存在则重置时间，否则创建一个新的计时器，计时到23:00时执行process_room方法
