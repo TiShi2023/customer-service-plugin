@@ -78,6 +78,7 @@ class CustomerServicePlugin(Plugin):
 
         self.room_update_time = {}
         self.room_timers = {}  # 用于存储群聊的定时器
+        self.write_index = 0
 
     def get_ai_response(self, msg, chat_history) -> Optional[str]:
         if not self.enabled:
@@ -156,6 +157,8 @@ class CustomerServicePlugin(Plugin):
             # 从room_timers中判断该群聊计时器是否存在，存在则重置时间，否则创建一个新的计时器，计时到23:00时执行process_room方法
             # 计算当前时间距离23：00的秒数，创建一个新的计时器
             count_down = (23 - time.localtime().tm_hour) * 3600 - time.localtime().tm_min * 60 - time.localtime().tm_sec
+            # 倒计时加上当前秒数模60，防止集中在整点触发
+            count_down += time.time() % 60
             if message.room.display_name not in self.room_timers:
                 timer = Timer(count_down, self.process_room, args=(message, chat_history))
                 timer.start()
@@ -215,8 +218,14 @@ class CustomerServicePlugin(Plugin):
         # try:
         #     index = self.chat_rooms.index(room_name) + 2
         # except ValueError:
-        index = len(self.chat_rooms) + 2
+        index = len(self.chat_rooms) + 2 + self.write_index
         write_sheet = WriteSheet()
-        write_row(f'B{index}:E{index}',
-                  [[room_name, is_complaint, complaint, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())]],
-                  access_token, write_sheet, self.union_id, self.workbook_id, self.sheet_id, )
+        try:
+            write_row(f'B{index}:E{index}',
+                      [[room_name, is_complaint, complaint, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())]],
+                      access_token, write_sheet, self.union_id, self.workbook_id, self.sheet_id, )
+            self.write_index += 1
+            self.logger.info(f"已更新群聊 {room_name} 的投诉状态")
+        except Exception as e:
+            self.logger.error(f"更新群聊 {room_name} 的投诉状态时出错: {e}")
+
