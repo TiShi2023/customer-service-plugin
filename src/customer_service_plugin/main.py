@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 from threading import Timer
@@ -155,8 +156,13 @@ class CustomerServicePlugin(Plugin):
         # 增加判断条件，如果是私聊，直接可以响应
         if message.is_chatroom:
             # 从room_timers中判断该群聊计时器是否存在，存在则重置时间，否则创建一个新的计时器，计时到23:00时执行process_room方法
-            # 计算当前时间距离23：00的秒数，创建一个新的计时器
-            count_down = (23 - time.localtime().tm_hour) * 3600 - time.localtime().tm_min * 60 - time.localtime().tm_sec
+            # 计算当前时间距离00：00的秒数，创建一个新的计时器
+            # 获取当前时间
+            now = datetime.datetime.now()
+            # 获取今天午夜的时间
+            midnight = datetime.datetime(now.year, now.month, now.day, 23, 59, 59)
+            # 计算时间差并转换成秒数
+            count_down = (midnight - now).total_seconds()
             # 倒计时加上当前秒数模60，防止集中在整点触发
             count_down += time.time() % 60
             if message.room.display_name not in self.room_timers:
