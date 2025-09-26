@@ -196,7 +196,8 @@ class CustomerServicePlugin(Plugin):
                     ],
                 )
             )
-        plusginExcuteContext.should_stop = True
+        # plusginExcuteContext.should_stop = True
+        return
 
     def process_room(self, message, chat_history):
         # if self.room_update_time.get(message.room.display_name, 0) + self.cooling_time > time.time():
