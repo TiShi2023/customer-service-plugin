@@ -148,7 +148,7 @@ class CustomerServicePlugin(Plugin):
             return
         context = plusginExcuteContext.get_context()
         chat_history = context.get("chat_history", "")
-        self.logger.debug(f"当前消息数量: {len(json.loads(chat_history))}")
+        self.logger.info(f"当前消息数量: {len(json.loads(chat_history))}")
         if len(json.loads(chat_history)) < self.min_session_length:
             return
         self.chat_rooms = self.read_all_chat_rooms()
@@ -205,8 +205,8 @@ class CustomerServicePlugin(Plugin):
         #     return
         response = self.get_ai_response(msg=message, chat_history=chat_history)
         self.logger.info(f"AI响应: {response}")
-        is_complaint, complaint = response.split('|')
-        self.update_chat_room(message.room.display_name, is_complaint, complaint)
+        is_complaint, is_fault, is_trapped, reason = response.split('|')
+        self.update_chat_room(message.room.display_name, is_complaint, is_fault, is_trapped, reason)
         self.room_update_time[message.room.display_name] = time.time()
 
     def read_all_chat_rooms(self):
@@ -218,7 +218,7 @@ class CustomerServicePlugin(Plugin):
         chat_rooms = read_whole_column('B', access_token, read_sheet, self.union_id, self.workbook_id, self.sheet_id)
         return chat_rooms
 
-    def update_chat_room(self, room_name, is_complaint, complaint):
+    def update_chat_room(self, room_name, is_complaint, is_fault, is_trapped, reason):
         resp = self.oauth.main()
         access_token = resp['accessToken']
 
@@ -228,11 +228,11 @@ class CustomerServicePlugin(Plugin):
         index = len(self.chat_rooms) + 2 + self.write_index
         write_sheet = WriteSheet()
         try:
-            write_row(f'B{index}:E{index}',
-                      [[room_name, is_complaint, complaint, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())]],
+            write_row(f'B{index}:G{index}',
+                      [[room_name, is_complaint, is_fault, is_trapped, reason, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())]],
                       access_token, write_sheet, self.union_id, self.workbook_id, self.sheet_id, )
             self.write_index += 1
-            self.logger.info(f"已更新群聊 {room_name} 的投诉状态")
+            print(f"已更新群聊 {room_name} 的投诉状态")
         except Exception as e:
-            self.logger.error(f"更新群聊 {room_name} 的投诉状态时出错: {e}")
+            print(f"更新群聊 {room_name} 的投诉状态时出错: {e}")
 
